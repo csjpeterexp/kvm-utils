@@ -11,7 +11,7 @@ print_help()
     cat <<EOF
 This script defines and starts a libvirt network with NAT.
 
-Usage: $0 <network_name> <CIDR>
+Usage: $0 <network_name> <CIDR> [OPTIONS]
 
 Arguments:
     <network_name>          Name of the libvirt network
@@ -21,7 +21,7 @@ Options:
     --bridge-name=<name>    Specify a custom bridge name (default: virbr<network_name>)
 
 Example:
-    $0 virbr0 default 192.168.122.0/24
+    $0 default 192.168.122.0/24
 
 EOF
 }
@@ -103,10 +103,12 @@ main()
     # No argument is specified
     if [ "$#" -eq 0 ]; then
         print_help
-        log_info "No action specified. Listing all networks."
-        sudo virsh net-list --all
-        log_info "Listing network interfaces."
-        sudo virsh iface-list --all
+        if [ -x virsh ]; then
+            log_info "No action specified. Listing all networks."
+            sudo virsh net-list --all
+            log_info "Listing network interfaces."
+            sudo virsh iface-list --all
+        fi
         return 1
     fi
 

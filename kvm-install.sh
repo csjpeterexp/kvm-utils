@@ -5,7 +5,9 @@
 
 set -o pipefail
 
-source kvm-include.sh
+MYDIR="$(dirname "$(readlink -f "$0")")"
+
+source "$MYDIR/kvm-include.sh"
 
 print_help() {
     cat <<EOF

@@ -27,10 +27,12 @@ main()
 {
     if [ "$#" -eq 0 ]; then
         print_help
-        log_info "No action specified. Listing all networks."
-        sudo virsh net-list --all
-        log_info "Listing network interfaces."
-        sudo virsh iface-list --all
+        if [ -x virsh ]; then
+            log_info "No action specified. Listing all networks."
+            sudo virsh net-list --all
+            log_info "Listing network interfaces."
+            sudo virsh iface-list --all
+        fi
         return 1
     fi
 
