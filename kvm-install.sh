@@ -12,15 +12,11 @@ source "$MYDIR/kvm-include.sh"
 print_help() {
     cat <<EOF
 This script installs and configures KVM and libvirt for virtualization.
-It can also install the optional Cockpit Web UI for web-based VM management.
 
 Usage: $0 <action> [OPTIONS]
 
 Actions:
-  install         Install KVM and libvirt
-  uninstall       Uninstall KVM and libvirt
-  install-webui  Install Cockpit Web UI
-  uninstall-webui Uninstall Cockpit Web UI
+  sure            Yes, do install KVM and libvirt
 
 Options:
   -h, --help     Show this help message and exit
@@ -31,12 +27,23 @@ EOF
 function install_kvm()
 {
     log_info "Installing KVM and libvirt packages..."
+
     sudo dnf install -y qemu-kvm libvirt bridge-utils virt-install virt-viewer libvirt-daemon-kvm
+    if [ $? -ne 0 ]; then
+        log_error "Failed to install KVM and libvirt packages."
+        return 1
+    fi
 
     log_info "Enabling and starting libvirtd service..."
+
     sudo systemctl enable --now libvirtd
+    if [ $? -ne 0 ]; then
+        log_error "Failed to enable and start libvirtd service."
+        return 1
+    fi
 
     log_info "Checking KVM hardware support..."
+
     if grep -qE '(vmx|svm)' /proc/cpuinfo; then
         log_info "KVM hardware acceleration is supported."
     else
@@ -44,44 +51,6 @@ function install_kvm()
     fi
 
     log_info "Setup completed."
-}
-
-uninstall_kvm()
-{
-    log_info "Stopping and disabling libvirtd service..."
-    sudo systemctl stop libvirtd
-    sudo systemctl disable libvirtd
-
-    log_info "Uninstalling KVM and libvirt packages..."
-    sudo dnf remove -y qemu-kvm libvirt bridge-utils virt-install virt-viewer libvirt-daemon-kvm
-
-    sudo systemctl daemon-reload
-
-    log_info "KVM and libvirt uninstalled."
-}
-
-install_webui()
-{
-    log_info "Installing Cockpit Web UI..."
-    sudo dnf install -y cockpit cockpit-machines
-
-    log_info "Enabling and starting Cockpit service..."
-    sudo systemctl enable --now cockpit.socket
-
-    log_info "Cockpit Web UI should now be accessible at:"
-    echo "       https://$(hostname -I | awk '{print $1}'):9090/"
-}
-
-uninstall_webui()
-{
-    log_info "Uninstalling Cockpit Web UI..."
-    sudo dnf remove -y cockpit cockpit-machines
-
-    log_info "Stopping and disabling Cockpit service..."
-    sudo systemctl stop cockpit.socket
-    sudo systemctl disable cockpit.socket
-
-    log_info "Cockpit Web UI uninstalled."
 }
 
 main()
@@ -94,25 +63,9 @@ main()
     local action="$1"
     shift
     case "$action" in
-        install)
+        sure)
             install_kvm "$@"
             return $?
-            ;;
-        uninstall)
-            uninstall_kvm "$@"
-            return $?
-            ;;
-        install-webui)
-            install_webui "$@"
-            return $?
-            ;;
-        uninstall-webui)
-            uninstall_webui "$@"
-            return $?
-            ;;
-        help|-h|--help)
-            print_help
-            return 0
             ;;
         *)
             log_error "Unknown action: $action"

@@ -6,6 +6,9 @@ MYDIR=$(dirname "$(readlink -f "$0")")
 
 source "$MYDIR/kvm-include.sh"
 
+NETWORK_NAME=""
+BRIDGE_NAME=""
+
 print_help()
 {
     cat <<EOF
@@ -25,7 +28,7 @@ Example:
 EOF
 }
 
-main()
+function parse_args()
 {
     # No argument is specified
     if [ "$#" -eq 0 ]; then
@@ -51,30 +54,24 @@ main()
     fi
 
     # Argument 1 is the network name
-    local network_name=$1
+    NETWORK_NAME=$1
     shift
-    if [ "$network_name" == "" ]; then
+    if [ "$NETWORK_NAME" == "" ]; then
         log_error "Network name is required"
         return 1
     fi
-    log_info "Network name: $network_name"
+    log_info "Network name: $NETWORK_NAME"
 
     # Options
     while [ "$#" -gt 0 ]; do
         case "$1" in
             --bridge-name=*)
-                local bridge_name="${1#--bridge-name=}"
-                if [ "$bridge_name" == "" ]; then
+                BRIDGE_NAME="${1#--bridge-name=}"
+                if [ "$BRIDGE_NAME" == "" ]; then
                     log_error "Bridge name cannot be empty"
                     return 1
                 fi
                 shift
-                ;;
-            --debug)
-                shift
-                export DEBUG=yes
-                set -x
-                trap 'set +x' EXIT
                 ;;
             *)
                 log_error "Unknown option: $1"
@@ -84,14 +81,18 @@ main()
     done
 
     # Ensuring having a bridge name
-    if [ "$bridge_name" == "" ]; then
-        local bridge_name="virbr${network_name}"
+    if [ "$BRIDGE_NAME" != "" ]; then
+        BRIDGE_NAME="virbr${network_name}"
     fi
-    log_info "Bridge name: $bridge_name"
+    log_info "Bridge name: $BRIDGE_NAME"
+}
 
-    #
-    # Main logic
-    #
+function main()
+{
+    parse_args "$@"
+    if [ $? -ne 0 ]; then
+        return 1
+    fi
 
     if sudo virsh net-list --all | grep -w "$network_name" > /dev/null; then
         if sudo virsh net-list --all | grep -w "$network_name" | grep -w "active" > /dev/null; then
