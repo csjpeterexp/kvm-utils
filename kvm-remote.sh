@@ -17,10 +17,12 @@ and executes it there with the arguments passed to this script.
 Usage: $0 <remote> <action> [arguments to pass to the remote script]
 
 Actions:
-  install         Installs or uninstalls KVM and libvirt
-  remove          Removes KVM and libvirt
-  net             Configure network bridge for KVM with libvirt
-  import          Import a cloud image into KVM
+  install         Installs or uninstalls KVM and libvirt.
+  remove          Removes KVM and libvirt.
+  net             Configure network bridge for KVM with libvirt.
+  import          Import a cloud image into KVM.
+  create          Create a new virtual machine.
+  delete          Delete a virtual machine.
 
 Options:
   -h, --help     Show this help message and exit
@@ -134,6 +136,16 @@ main()
         import)
             install_utility_to_remote "$remote" kvm-include.sh kvm-import-image.sh
             execute_utility_on_remote "$remote" kvm-import-image.sh "$@"
+            return $?
+            ;;
+        create)
+            install_utility_to_remote "$remote" kvm-include.sh kvm-create-vm.sh
+            execute_utility_on_remote "$remote" kvm-create-vm.sh "$@"
+            return $?
+            ;;
+        delete)
+            install_utility_to_remote "$remote" kvm-include.sh kvm-delete-vm.sh
+            execute_utility_on_remote "$remote" kvm-delete-vm.sh "$@"
             return $?
             ;;
         help|-h|--help)

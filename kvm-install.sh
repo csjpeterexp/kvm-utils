@@ -28,7 +28,7 @@ function install_kvm()
 {
     log_info "Installing KVM and libvirt packages..."
 
-    sudo dnf install -y qemu-kvm libvirt bridge-utils virt-install virt-viewer libvirt-daemon-kvm
+    sudo dnf install -y --nobest qemu-kvm libvirt bridge-utils virt-install virt-viewer libvirt-daemon-kvm xorriso cloud-init guestfs-tools
     if [ $? -ne 0 ]; then
         log_error "Failed to install KVM and libvirt packages."
         return 1

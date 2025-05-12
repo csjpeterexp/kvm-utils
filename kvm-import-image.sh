@@ -123,10 +123,6 @@ function main()
         return 1
     fi
 
-    QEMU_GROUP="qemu" # RedHat default
-    if [ "$LINUX_FAMILY" == "debian" ]; then
-        QEMU_GROUP="libvirt-qemu" # Debian default
-    fi
     sudo chown ${QEMU_GROUP}:kvm ${tpl_image_path}
     if [ $? -ne 0 ]; then
         log_error "Failed to set ownership ${QEMU_GROUP}:kvm on image file ${tpl_image_path}."
