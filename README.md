@@ -66,6 +66,27 @@ Example usage:
 ./kvm-import-image.sh ubuntu24
 ```
 
+## kvm-create-vm.sh
+
+This script creates a new VM in KVM libvirt. It uses the cloud image
+imported by `kvm-import-image.sh` and creates a new VM with the specified
+name and configuration.
+
+Example usage:
+```bash
+./kvm-create-vm.sh ubuntu24 ubuntu24-guest 192.168.100.2 --ram=2048 --vcpus=2 --disk-size=20G 
+```
+
+## kvm-delete-vm.sh
+
+This script deletes a VM in KVM libvirt. It removes the VM and its
+associated resources.
+
+Example usage:
+```bash
+./kvm-delete-vm.sh ubuntu24-guest
+```
+
 ## kvm-remote.sh
 
 This script copies the necessary kvm utility script to a remote server and
